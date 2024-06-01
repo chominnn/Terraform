@@ -1,0 +1,38 @@
+#cloud-config
+users:
+  - name: ubuntu
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    shell: /bin/bash
+
+chpasswd:
+  list: |
+    ubuntu:ubuntu
+  expire: False
+
+ssh_pwauth: True
+
+packages:
+  - qemu-guest-agent
+
+write_files:
+  - path: /etc/netplan/50-cloud-init.yaml
+    content: |
+      network:
+        version: 2
+        renderer: networkd
+        ethernets:
+          ens3:
+            dhcp4: no
+            addresses:
+              - 211.39.158.195/24
+            gateway4: 211.39.158.1
+            nameservers:
+              addresses:
+                - 8.8.8.8
+                - 8.8.4.4
+
+runcmd:
+  - systemctl enable qemu-guest-agent
+  - systemctl start qemu-guest-agent
+  - netplan apply
+
