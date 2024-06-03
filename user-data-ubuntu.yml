@@ -24,13 +24,12 @@ write_files:
           ens3:
             dhcp4: no
             addresses:
-              - 211.39.158.195/24
-            gateway4: 211.39.158.1
+              - ${net_prefix}.${IP_addr}/24
+            gateway4: ${net_prefix}.1
             nameservers:
               addresses:
                 - 8.8.8.8
                 - 8.8.4.4
-
 runcmd:
   - systemctl enable qemu-guest-agent
   - systemctl start qemu-guest-agent

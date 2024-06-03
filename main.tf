@@ -12,38 +12,33 @@ provider "libvirt" {
   uri = "qemu:///system"
 }
 
-resource "libvirt_volume" "ubuntu_img" {
-  name   = "ubuntu-20.04"
-  source = "/home/ubuntu/ubuntu-20.04-server-cloudimg-amd64.img" # 로컬 파일 경로로 변경
-  format = "qcow2"
-}
-
-resource "libvirt_cloudinit_disk" "commoninit" {
-  name           = "commoninit.iso"
-  user_data      = data.template_file.user_data.rendered
-}
-
-data "template_file" "user_data" {
-  template = file("${path.module}/user-data-ubuntu.yml")
-}
+#resource "libvirt_volume" "ubuntu_img" {
+#  name   = "ubuntu-20.04"
+#  source = "/home/ubuntu/ubuntu-20.04-server-cloudimg-amd64.img" # 로컬 파일 경로로 변경
+#  format = "qcow2"
+#}
 
 resource "libvirt_domain" "ubuntu" {
-  name        = "ubuntu-kvm"
-  memory      = 2048
-  vcpu        = 2
+  name = var.vm_name[count.index]
+  count = var.number_of_vms
+  memory      = var.vm_memory[count.index]
+  vcpu        = var.vm_vcpu[count.index]
   qemu_agent  = true
-  cloudinit   = libvirt_cloudinit_disk.commoninit.id
-  
+  cloudinit = libvirt_cloudinit_disk.cloud-init[count.index].id
+
   network_interface {
     network_name = "br0"
-    addresses = ["211.39.158.195/24"]
+    addresses = ["${var.net_prefix}.${var.IP_addr[count.index]}"]
     bridge    = "br0"
   }
 
   disk {
-    volume_id = libvirt_volume.ubuntu_img.id
+    volume_id = element(libvirt_volume.vm-boot-vol.*.id, count.index)
   }
 
+  disk {
+    volume_id = element(libvirt_volume.vm-data-vol.*.id, count.index)
+  }
   console {
     type        = "pty"
     target_type = "serial"
