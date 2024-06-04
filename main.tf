@@ -19,17 +19,37 @@ provider "libvirt" {
 #}
 
 resource "libvirt_domain" "ubuntu" {
-  name = var.vm_name[count.index]
   count = var.number_of_vms
-  memory      = var.vm_memory[count.index]
-  vcpu        = var.vm_vcpu[count.index]
-  qemu_agent  = true
-  cloudinit = libvirt_cloudinit_disk.cloud-init[count.index].id
+  name  = var.vm_name[count.index]
+  memory = var.vm_memory[count.index]
+  vcpu   = var.vm_vcpu[count.index]
+  qemu_agent = true
+  cloudinit  = libvirt_cloudinit_disk.cloud-init[count.index].id
+
+  provisioner "remote-exec" {
+    inline = [
+    "sudo apt-get update",
+    "sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common",
+    "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -",
+    "sudo add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable'",
+    "sudo apt-get update",
+    "sudo apt-get install -y docker-ce docker-ce-cli containerd.io",
+    "sudo systemctl start docker",
+    "sudo systemctl enable docker"
+    ]
+
+    connection {
+      type     = "ssh"
+      user     = "ubuntu"
+      password = "ubuntu"
+      host     = "${var.net_prefix}.${var.IP_addr[count.index]}"
+    }
+  }
 
   network_interface {
     network_name = "br0"
-    addresses = ["${var.net_prefix}.${var.IP_addr[count.index]}"]
-    bridge    = "br0"
+    addresses    = ["${var.net_prefix}.${var.IP_addr[count.index]}"]
+    bridge       = "br0"
   }
 
   disk {
@@ -39,6 +59,7 @@ resource "libvirt_domain" "ubuntu" {
   disk {
     volume_id = element(libvirt_volume.vm-data-vol.*.id, count.index)
   }
+
   console {
     type        = "pty"
     target_type = "serial"

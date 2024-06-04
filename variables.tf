@@ -24,13 +24,13 @@ variable "ssh_port" {
 
 variable "net_prefix" {
   description = "The VM network address will be net_prefix.0/24"
-  default     = "net_prefix를 입력해주세요 ex) 192.168.0"
+  default     = "211.39.158"
 }
 
 variable "IP_addr" {
   description = "Last byte about mac & iP address for this VM"
   type        = list(number)
-  default     = [마지막 ip 주소를 입력해주세요 ex) 100,101,102]
+  default     = [195,196,197,198,199]
 }
 
 variable "vm_memory" {

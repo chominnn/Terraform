@@ -1,7 +1,7 @@
 #cloud-config
 users:
   - name: ubuntu
-    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
     shell: /bin/bash
   - name: root
     lock_passwd: false
@@ -15,6 +15,8 @@ chpasswd:
 
 ssh_pwauth: True
 
+package_update: true
+package_upgrade: true
 packages:
   - qemu-guest-agent
 
@@ -35,16 +37,8 @@ write_files:
                 - 8.8.8.8
                 - 8.8.4.4
 runcmd:
+  - apt-get update
   - systemctl enable qemu-guest-agent
   - systemctl start qemu-guest-agent
   - netplan apply
-  - sudo swapoff --all
-  - apt-get update
-  - sudo apt install docker.io
-  - systemctl start docker
-  - systemctl enable docker
-  - sudo curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-  - sudo echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list
-  - apt-get update
-  - apt install kubelet kubeadm kubectl
-  - apt-mark hold kubelet kubeadm kubectl
+  - swapoff --all
