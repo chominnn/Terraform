@@ -3,9 +3,13 @@ users:
   - name: ubuntu
     sudo: ['ALL=(ALL) NOPASSWD:ALL']
     shell: /bin/bash
+  - name: root
+    lock_passwd: false
+    hashed_passwd: $6$rounds=4096$dlS7oUlBJqLhuO1E$DhJ8oT.JjXmYHQSjST.ZDWyqP4TbrgXzt6zOAh8Nhbvkwm64qTRmMG09CpZx5iCGIAZmFdsxlqtZWKNLogAZy0
 
 chpasswd:
   list: |
+    root:test123
     ubuntu:ubuntu
   expire: False
 
@@ -34,4 +38,13 @@ runcmd:
   - systemctl enable qemu-guest-agent
   - systemctl start qemu-guest-agent
   - netplan apply
-
+  - sudo swapoff --all
+  - apt-get update
+  - sudo apt install docker.io
+  - systemctl start docker
+  - systemctl enable docker
+  - sudo curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+  - sudo echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list
+  - apt-get update
+  - apt install kubelet kubeadm kubectl
+  - apt-mark hold kubelet kubeadm kubectl

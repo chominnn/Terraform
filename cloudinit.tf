@@ -18,4 +18,3 @@ resource "libvirt_cloudinit_disk" "cloud-init" {
   pool = "iso"
   user_data      = data.template_file.user_data[count.index].rendered
 }
-
